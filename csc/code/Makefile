@@ -1,12 +1,10 @@
 .PHONY: clean
 
-INCLUDES = -I ../include
-
-fibo.o: fibo.c ../include/fibo.h
-	gcc -c fibo.o fibo.c
+fibo.o: fibo.c
+	gcc -c -I../include fibo.c
 
 main.o: main.c
-	gcc -c main.o main.c
+	gcc -c -I../include main.c
 
 clean: 
 	rm -f *.o

@@ -1,7 +1,9 @@
 .PHONY: clean
 
-fibo: code/fibo.o code/main.o
-	gcc -o fibo code/fibo.o code/main.o
+fibo:
+	make -C ./code fibo.o
+	make -C ./code main.o
+	gcc -o fibo ./code/fibo.o ./code/main.o
 
 clean:
-	rm -f code/*.o
+	make -C ./code clean
