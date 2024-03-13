@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir test
+mkdir ./test
 
 mv ./code ./test
 
