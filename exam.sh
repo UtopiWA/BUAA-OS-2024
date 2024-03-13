@@ -18,11 +18,11 @@ done
 
 gcc ./test/code/*.o -o ./test/hello
 
-./test/hello 2> ./test/err.txt
+./test/hello 2>> ./test/err.txt
 
 mv ./test/err.txt ./err.txt
 
-chmod 625 err.txt
+#chmod 625 err.txt
 
 #$1=1
 #$2=1
