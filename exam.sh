@@ -2,9 +2,9 @@
 
 mkdir ./test
 
-mv ./code ./test
+cp -r ./code ./test
 
-sed '' 14.c
+sed '' ./code/14.c
 
 a=0
 while [$a -lt 16]
