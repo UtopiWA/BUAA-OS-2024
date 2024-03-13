@@ -22,7 +22,7 @@ gcc ./test/code/*.o -o ./test/hello
 
 mv ./test/err.txt ./err.txt
 
-#chmod 625 err.txt
+chmod 655 err.txt
 
 #$1=1
 #$2=1
