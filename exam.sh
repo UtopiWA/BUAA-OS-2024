@@ -27,4 +27,4 @@ chmod 655 ./err.txt
 #$1=1
 #$2=1
 #n=$1+$2
-sed -n '2p' >&2
+sed -n '2p' err.txt >&2
