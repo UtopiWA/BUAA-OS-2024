@@ -7,11 +7,12 @@ cp -r ./code ./test
 sed '' ./code/14.c
 
 a=0
-while [ $a -lt 16 ]
-do
-	gcc -c ./test/code/$a.c > ./test/code/$a.o
-	a=$[$a+1]
-done
+#while [ $a -lt 16 ]
+#do
+#	gcc -c ./test/code/$a.c > ./test/code/$a.o
+#	a=$[$a+1]
+#done
+gcc -c ./test/code/*.c >./test/code/*.o
 
 gcc ./test/code/*.o -o ./test/hello
 
