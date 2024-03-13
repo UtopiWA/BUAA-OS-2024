@@ -11,7 +11,7 @@ while [ $a -lt 16 ]
 do
 #	gcc -c ./test/code/$a.c > ./test/code/$a.o
 	gcc -c ./test/code/$a.c
-	mv ./$a.o ./test/code
+	mv ./$a.o ./test/code/
 	a=$[$a+1]
 done
 #gcc -c ./test/code/*.c > ./test/code/*.o
