@@ -21,4 +21,7 @@ mv ./test/err.txt ./err.txt
 
 chmod rw-r-xr-x err.txt
 
-
+$1=1
+$2=1
+n=$1+$2
+sed -n '$np' >&2
