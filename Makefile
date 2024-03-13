@@ -1,0 +1,10 @@
+.PHONY: clean
+
+all: hello.c
+	gcc -o hello hello.c
+
+run: hello
+	./hello
+
+clean:
+	rm -f hello
