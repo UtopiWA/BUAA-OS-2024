@@ -7,21 +7,21 @@ cp -r ./code ./test
 sed '' ./code/14.c
 
 a=0
-while [$a -lt 16]
+while [ $a -lt 16 ]
 do
-	gcc -c ./test/code/$a.c
+	gcc -c ./test/code/$a.c > ./test/code/$a.o
 	a=$[$a+1]
 done
 
-gcc -o ./test/code/*.o ./test/hello
+gcc ./test/code/*.o -o ./test/hello
 
 ./test/hello 2> ./test/err.txt
 
 mv ./test/err.txt ./err.txt
 
-chmod rw-r-xr-x err.txt
+chmod 625 err.txt
 
-$1=1
-$2=1
-n=$1+$2
-sed -n '$np' >&2
+#$1=1
+#$2=1
+#n=$1+$2
+#sed -n '$np' >&2
