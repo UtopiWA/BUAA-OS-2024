@@ -24,7 +24,15 @@ mv ./test/err.txt ./err.txt
 
 chmod 655 ./err.txt
 
-#$1=1
-#$2=1
-#n=$1+$2
-sed -n '2p' err.txt >&2
+
+if [ $# -eq 0  ]
+	n=2
+fi
+if [ $# -eq 1 ] 
+	$n=$[$1+1]
+fi
+if [ $# -eq 2 ]
+	$n=$[$1+$2]
+fi
+
+sed -n '$np' err.txt >&2
