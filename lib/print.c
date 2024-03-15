@@ -26,10 +26,10 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 		/* check "are we hitting the end?" */
 		/* Exercise 1.4: Your code here. (3/8) */
 		while ((*fmt) != '%') {
-			out(data, fmt, 1);
 			// print_char(out, data, *fmt, 1, 1);
 			if (!(*fmt))
 				return;
+			out(data, fmt, 1);
 			fmt++;
 		}
 
