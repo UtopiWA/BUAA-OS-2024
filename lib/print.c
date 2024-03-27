@@ -60,7 +60,7 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 				// Lab 1-Extra: Your code here. (4/5)
 				in(data, &ch, 1);
 				ip = (int *)ch;
-				// (va_arg(ap, int *)) = ip;
+				*((va_arg(ap, char *)) = *ip;
 				// *ip = va_arg(ap, int);
 				ret++;		
 
@@ -72,7 +72,7 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 					// 
 					in(data, &ch, 1);
 				}
-				// va_arg(ap, char *) = cp;
+				va_arg(ap, char *) = cp;
 				cp = va_arg(ap, char *);
 				ret++;
 
