@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 void printk(const char *fmt, ...);
+int scanf(const char *fmt, ...); /*lab1-extra*/
 
 void _panic(const char *, int, const char *, const char *, ...)
 #ifdef MOS_HANG_ON_PANIC

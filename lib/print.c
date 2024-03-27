@@ -5,6 +5,85 @@ static void print_char(fmt_callback_t, void *, char, int, int);
 static void print_str(fmt_callback_t, void *, const char *, int, int);
 static void print_num(fmt_callback_t, void *, unsigned long, int, int, int, int, char, int);
 
+int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
+	int *ip;
+	char *cp;
+	char ch;
+	int base, num, neg, ret = 0;
+
+	while (*fmt) {
+		if (*fmt == '%') {
+			ret++;
+			fmt++; // 跳过 '%'
+			do {
+				in(data, &ch, 1);
+			} while (ch == ' ' || ch == '\t' || ch == '\n'); // 跳过空白符
+			// 注意，此时 ch 为第一个有效输入字符
+			switch (*fmt) {
+			case 'd': // 十进制
+				// Lab 1-Extra: Your code here. (2/5)
+				num = 0;
+				neg = 0;
+				in(data, &ch, 1);
+				while (ch == '-' || (ch >= '0' && ch <= '9')) {
+					if (ch == '-')
+						neg = 1;
+					else
+						num = num * 10 + ch - '0';
+					in(data, &ch, 1);
+				}
+				*(va_arg(ap, int *)) = num;
+				// num = va_arg(ap, int);
+				ret++;
+				
+				break;
+			case 'x': // 十六进制
+				// Lab 1-Extra: Your code here. (3/5)
+				num = 0;
+				neg = 0;
+				in(data, &ch, 1);
+				while (ch == '-' || (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f')) {
+					if (ch == '-')
+						neg = 1;
+					else if (ch >= '0' && ch <= '9')
+						num = num * 16 + ch - '0';
+					else
+						num = num * 16 + ch - 'a' + 10;
+					in(data, &ch, 1);
+				}
+				*(va_arg(ap, int *)) = num;
+				// num = va_arg(ap, int);
+				ret++;
+
+				break;
+			case 'c':
+				// Lab 1-Extra: Your code here. (4/5)
+				in(data, &ch, 1);
+				ip = (int *)ch;
+				// (va_arg(ap, int *)) = ip;
+				// *ip = va_arg(ap, int);
+				ret++;		
+
+				break;
+			case 's':
+				// Lab 1-Extra: Your code here. (5/5)
+				in(data, cp, 1);
+				while(ch != '\t' && ch != ' ' && ch != '\n') {
+					// 
+					in(data, &ch, 1);
+				}
+				// va_arg(ap, char *) = cp;
+				cp = va_arg(ap, char *);
+				ret++;
+
+				break;
+			}
+			fmt++;
+		}
+	}
+	return ret;
+}
+
 void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 	char c;
 	const char *s;
