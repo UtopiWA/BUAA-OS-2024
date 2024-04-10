@@ -526,3 +526,84 @@ void page_check(void) {
 
 	printk("page_check() succeeded!\n");
 }
+
+#include <buddy.h>
+
+struct Page_list buddy_free_list[2];
+
+void buddy_init() {
+	LIST_INIT(&buddy_free_list[0]);
+	LIST_INIT(&buddy_free_list[1]);
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_REMOVE(pp, pp_link);
+	}
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += 2 * PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	}
+}
+
+int buddy_alloc(u_int size, struct Page **new) {
+	/* Your Code Here (1/2) */
+	struct Page *pp;
+
+	if (size > 4096) {
+		if (!LIST_EMPTY(&buddy_free_list[1])) {
+			pp = LIST_FIRST(&buddy_free_list[1]);
+			LIST_REMOVE(pp, pp_link);
+			memset((void *)page2kva(pp), 0, sizeof(struct Page));
+			*new = pp;
+		} else {
+			return -E_NO_MEM;
+		}
+		return 2;
+	} else {
+		if (!LIST_EMPTY(&buddy_free_list[0])) {
+			pp = LIST_FIRST(&buddy_free_list[0]);
+			LIST_REMOVE(pp, pp_link);
+			memset((void *)page2kva(pp), 0, sizeof(struct Page));
+			*new = pp;
+		} else if (!LIST_EMPTY(&buddy_free_list[1])) {
+			pp = LIST_FIRST(&buddy_free_list[1]);
+			LIST_REMOVE(pp, pp_link);
+			struct Page *pp2 = pa2page(page2pa(pp) + PAGE_SIZE);
+			LIST_INSERT_HEAD(&buddy_free_list[0], pp2, pp_link);
+			memset((void *)page2kva(pp), 0, sizeof(struct Page));
+			*new = pp;
+		} else {
+			return -E_NO_MEM;
+		}
+		return 1;
+	}
+	return 0;
+}
+
+void buddy_free(struct Page *pp, int npp) {
+	/* Your Code Here (2/2) */
+	struct Page *ppt;
+	int flag;
+
+	if (npp == 2) {
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	} else {
+		flag = 0;
+		for (ppt = LIST_FIRST(&buddy_free_list[0]); ppt; ppt = LIST_NEXT(ppt, pp_link)) {
+			if ((page2pa(pp) ^ page2pa(ppt)) == PAGE_SIZE) {
+				flag = 1;
+				break;
+			}
+		}
+
+		if (flag && ppt != NULL) {
+			LIST_REMOVE(ppt, pp_link);
+			if (page2pa(pp) < page2pa(ppt)) {
+				LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+			} else {
+				LIST_INSERT_HEAD(&buddy_free_list[1], ppt, pp_link);
+			}
+		} else {
+			LIST_INSERT_HEAD(&buddy_free_list[0], pp, pp_link);
+		}
+	}
+}
