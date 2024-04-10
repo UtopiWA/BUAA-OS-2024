@@ -58,6 +58,7 @@ static inline u_long va2pa(Pde *pgdir, u_long va) {
 	return PTE_ADDR(p[PTX(va)]);
 }
 
+u_int page_filter(Pde *pgdir, u_int va_lower_limit, u_int va_upper_limit, u_int num); /*lab2-exam*/
 void mips_detect_memory(u_int _memsize);
 void mips_vm_init(void);
 void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size);
