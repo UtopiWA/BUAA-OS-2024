@@ -47,7 +47,7 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 	// page_init();
 
 	// lab3:
-	 env_init();
+	//env_init();
 
 	// lab3:
 	 ENV_CREATE_PRIORITY(user_bare_loop, 1);
@@ -67,7 +67,7 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size) {
 	// ENV_CREATE(user_devtst);
 
 	// lab3:
-	schedule(0);
+	//schedule(0);
 }
 
 #endif
