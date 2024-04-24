@@ -24,6 +24,10 @@
 	sw      k0, TF_CAUSE(sp)
 	mfc0    k0, CP0_EPC
 	sw      k0, TF_EPC(sp)
+
+	mfc0	k0, CP0_COUNT
+	sw	k0, TF_COUNT(sp) // added
+
 	mfc0    k0, CP0_BADVADDR
 	sw      k0, TF_BADVADDR(sp)
 	mfhi    k0

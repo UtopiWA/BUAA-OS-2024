@@ -39,6 +39,9 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs; // number of times we've been env_run'ed
+
+	u_int env_scheds; // added in lab3-exam
+	u_int env_clocks;  // added
 };
 
 LIST_HEAD(Env_list, Env);
@@ -57,6 +60,8 @@ void env_run(struct Env *e) __attribute__((noreturn));
 
 void env_check(void);
 void envid2env_check(void);
+
+void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks);
 
 #define ENV_CREATE_PRIORITY(x, y)                                                                  \
 	({                                                                                         \

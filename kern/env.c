@@ -585,3 +585,10 @@ void envid2env_check() {
 	assert(re == -E_BAD_ENV);
 	printk("envid2env() work well!\n");
 }
+
+void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *clocks) {
+	*pri = e->env_pri;
+	*runs = e->env_runs;
+	*scheds = e->env_scheds;
+	*clocks = e->env_clocks; 
+}
