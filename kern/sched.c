@@ -48,7 +48,8 @@ void schedule(int yield) {
 		e = TAILQ_FIRST(&env_sched_list);
 		count = e->env_pri;
 		e->env_scheds++; // added
-		 e->env_clocks += ((struct Trapframe *)KSTACKTOP - 1)->cp0_count; // added
+		if (e->env_scheds > 1)
+			e->env_clocks += ((struct Trapframe *)KSTACKTOP - 1)->cp0_count; // added
 		env_run(e);
 	} else {
 		env_run(e);
