@@ -46,8 +46,9 @@ void schedule(int yield) {
 			panic("no runnable envs!");
 		}
 		e = TAILQ_FIRST(&env_sched_list);
-		count = e->env_pri; // added
-		e->env_scheds++;
+		count = e->env_pri;
+		e->env_scheds++; // added
+		 e->env_clocks += ((struct Trapframe *)KSTACKTOP - 1)->cp0_count; // added
 		env_run(e);
 	} else {
 		env_run(e);
