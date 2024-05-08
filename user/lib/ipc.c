@@ -37,3 +37,31 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 
 	return env->env_ipc_value;
 }
+
+void sem_open(int sem_id, int n) {
+	syscall_sem_open(sem_id, n);
+}
+
+int sem_wait(int sem_id) {
+	int r;
+	// Lab 4-1-Exam: Your code here. (1/9)
+	// Implement process blocking
+	while (1) {
+		r = syscall_sem_wait(sem_id);
+		if (r == 1) {
+			syscall_yield();	
+		} else {
+			break;
+		}
+	}
+
+	return r;
+}
+
+int sem_post(int sem_id) {
+	return syscall_sem_post(sem_id);
+}
+
+int sem_kill(int sem_id) {
+	return syscall_sem_kill(sem_id);
+}
