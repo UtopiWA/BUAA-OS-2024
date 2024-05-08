@@ -553,7 +553,8 @@ int sys_msg_recv(u_int dstva) {
 	p = m->msg_page;
 	if (dstva != 0 && p) {
 		p->pp_ref--;
-		// ?	
+		
+		page_decref(p);	
 	}
 	m->msg_status = MSG_RECV;
 	TAILQ_INSERT_TAIL(&msg_free_list, m, msg_link);
