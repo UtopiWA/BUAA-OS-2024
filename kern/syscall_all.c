@@ -486,6 +486,24 @@ int sys_cgetc(void) {
  */
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
+	if (len != 1 && len != 2 && len != 4) {
+		return -E_INVAL;
+	}
+	if (is_illegal_va_range(va, len)) {
+		return -E_INVAL;
+	}
+	if ((pa >= 0x180003f8 && pa + len < 0x180003f8 + 0x20)
+	 || (pa >= 0x180001f0 && pa + len < 0x180001f0 + 0x8)) {
+		if (len == 1) {
+			iowrite8(va, pa);
+		} else if (len == 2) {
+			iowrite16(va, pa);
+		} else if (len == 4) {
+			iowrite32(va, pa);
+		}
+	} else {
+		return -E_INVAL;
+	}
 
 	return 0;
 }
@@ -506,7 +524,25 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  *  You can use function 'ioread32', 'ioread16' and 'ioread8' to read data from device.
  */
 int sys_read_dev(u_int va, u_int pa, u_int len) {
-	/* Exercise 5.1: Your code here. (2/2) */
+	/* Exercise 5.1: Your code here. (2/2) */	
+	if (len != 1 && len != 2 && len != 4) {
+		return -E_INVAL;
+	}
+	if (is_illegal_va_range(va, len)) {
+		return -E_INVAL;
+	}
+	if ((pa >= 0x180003f8 && pa + len < 0x180003f8 + 0x20)
+	 || (pa >= 0x180001f0 && pa + len < 0x180001f0 + 0x8)) {
+		if (len == 1) {
+			*(u_int *)va = ioread8(pa);
+		} else if (len == 2) {
+			*(u_int *)va = ioread16(pa);
+		} else if (len == 4) {
+			*(u_int *)va = ioread32(pa);
+		}
+	} else {
+		return -E_INVAL;
+	}
 
 	return 0;
 }
