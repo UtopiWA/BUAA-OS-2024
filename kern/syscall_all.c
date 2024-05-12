@@ -492,8 +492,8 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 	if (is_illegal_va_range(va, len)) {
 		return -E_INVAL;
 	}
-	if ((pa >= 0x180003f8 && pa + len < 0x180003f8 + 0x20)
-	 || (pa >= 0x180001f0 && pa + len < 0x180001f0 + 0x8)) {
+	if ((pa >= 0x180003f8 && pa + len <= 0x180003f8 + 0x20)
+	 || (pa >= 0x180001f0 && pa + len <= 0x180001f0 + 0x8)) {
 		if (len == 1) {
 			iowrite8(*(uint8_t *)va, pa);
 		} else if (len == 2) {
@@ -526,13 +526,15 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */	
 	if (len != 1 && len != 2 && len != 4) {
+		// printk("--------66666---------\n");
 		return -E_INVAL;
 	}
 	if (is_illegal_va_range(va, len)) {
+		// printk("-------114514-------\n");	
 		return -E_INVAL;
 	}
-	if ((pa >= 0x180003f8 && pa + len < 0x180003f8 + 0x20)
-	 || (pa >= 0x180001f0 && pa + len < 0x180001f0 + 0x8)) {
+	if ((pa >= 0x180003f8 && pa + len <= 0x180003f8 + 0x20)
+	 || (pa >= 0x180001f0 && pa + len <= 0x180001f0 + 0x8)) {
 		if (len == 1) {
 			*(uint8_t *)va = ioread8(pa);
 		} else if (len == 2) {
@@ -541,6 +543,7 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 			*(uint32_t *)va = ioread32(pa);
 		}
 	} else {
+		// printk("wrong value in sys_read_dev: va: %x, pa: %x, len: %u\n", va, pa, len);
 		return -E_INVAL;
 	}
 
