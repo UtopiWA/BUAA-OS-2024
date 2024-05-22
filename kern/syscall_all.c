@@ -296,12 +296,14 @@ int sys_set_env_status(u_int envid, u_int status) {
 	try(envid2env(envid, &env, 1));
 
 	/* Step 3: Update 'env_sched_list' if the 'env_status' of 'env' is being changed. */
-	/* Exercise 4.14: Your code here. (3/3) */
-	if (env->env_status != status) {
-		if (status == ENV_RUNNABLE) {
-			TAILQ_INSERT_TAIL(&env_sched_list, env, env_sched_link);
-		} else if (status == ENV_NOT_RUNNABLE) {
-			TAILQ_REMOVE(&env_sched_list, env, env_sched_link);
+	if (status == ENV_RUNNABLE && env->env_status != ENV_RUNNABLE) {
+		TAILQ_INSERT_TAIL(&env_sched_list, env, env_sched_link);
+	} else if (status == ENV_NOT_RUNNABLE && env->env_status != ENV_NOT_RUNNABLE) {
+		TAILQ_REMOVE(&env_sched_list, env, env_sched_link);
+	        if(env == curenv) {
+		        env->env_status = status;
+		        schedule(1);
+		        // no return
 		}
 	}
 

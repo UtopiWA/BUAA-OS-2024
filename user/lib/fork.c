@@ -125,7 +125,14 @@ int fork(void) {
 	// Hint: 'env' should always point to the current env itself, so we should fix it to the
 	// correct value.
 	child = syscall_exofork();
+
+	// added in exam
+//	straced = 0;
+
 	if (child == 0) {
+		// added in exam
+		straced = 0;
+
 		env = envs + ENVX(syscall_getenvid());
 		return 0;
 	}
