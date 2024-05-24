@@ -91,6 +91,13 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (1/3) */
+			fd = open(t, O_RDONLY);
+			if (fd < 0) {
+				debugf("can't open '%s' for reading!", t);
+				exit();
+			}
+			dup(fd, 0);
+			close(fd);
 
 			user_panic("< redirection not implemented");
 
@@ -106,6 +113,13 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (2/3) */
+			fd = open(t, O_WRONLY);
+			if (fd < 0) {
+				debugf("can't open '%s' for writing!", t);
+				exit();
+			}
+			dup(fd, 1);
+			close(fd);
 
 			user_panic("> redirection not implemented");
 
@@ -128,6 +142,26 @@ int parsecmd(char **argv, int *rightpipe) {
 			 */
 			int p[2];
 			/* Exercise 6.5: Your code here. (3/3) */
+			if (pipe(p) != 0) {
+				debugf("fail to create a pipe!");
+				exit();
+			}
+			if ((r = fork()) < 0) {
+				debugf("fail to fork!");
+				exit();
+			}
+			*rightpipe = r;
+			if (r == 0) {
+				dup(p[0], 0);
+				close(p[0]);
+				close(p[1]);
+				return parsecmd(argv, rightpipe);
+			} else {
+				dup(p[1], 1);
+				close(p[0]);
+				close(p[1]);
+				return argc;
+			}
 
 			user_panic("| not implemented");
 
