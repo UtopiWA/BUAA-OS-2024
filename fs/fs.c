@@ -864,6 +864,8 @@ int copy_directory_contents(struct File *src, struct File *dst) {
 		copy_file_content(&dir_content[j], dst_file);
 	} else {
 		copy_directory_contents(&dir_content[j], dst_file);
+		
+		//copy_file_content(&dir_content[j], dst_file);
 	}
 	 //file_dirty(dst, j * BLOCK_SIZE);
 
