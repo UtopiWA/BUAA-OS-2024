@@ -2,7 +2,7 @@
 #include <lib.h>
 
 #define WHITESPACE " \t\r\n"
-#define SYMBOLS "<|>&;()"
+#define SYMBOLS "<|>&;()#"
 
 /* Overview:
  *   Parse the next token from the string at s.
@@ -31,6 +31,17 @@ int _gettoken(char *s, char **p1, char **p2) {
 	}
 	if (*s == 0) {
 		return 0;
+	}
+
+	if (*s == '\"') { // 引号
+		*s++ = 0;
+		*p1 = s;
+		while (*s && *s != '\"') {
+			s++;
+		}
+		*s++ = 0;
+		*p2 = s;
+		return 'w';
 	}
 
 	if (strchr(SYMBOLS, *s)) {
@@ -166,6 +177,24 @@ int parsecmd(char **argv, int *rightpipe) {
 			//user_panic("| not implemented");
 
 			break;
+		case ';':
+			if ((r = fork()) < 0) {
+				debugf("fail to fork!");
+				exit();
+			}
+			if (r == 0) {
+				return argc;
+			} else {
+				wait(r);
+				*rightpipe = 0;
+				return parsecmd(argv, rightpipe);
+			}
+			break;
+		case '#':
+			return argc;
+			break;
+			
+
 		}
 	}
 
