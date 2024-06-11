@@ -2,7 +2,7 @@
 #include <lib.h>
 
 #define WHITESPACE " \t\r\n"
-#define SYMBOLS "<|>&;()#"
+#define SYMBOLS "<|>&;()#`"
 
 /* Overview:
  *   Parse the next token from the string at s.
@@ -44,6 +44,20 @@ int _gettoken(char *s, char **p1, char **p2) {
 		return 'w';
 	}
 
+	if (*s == '`') { // 反引号，将前面的echo参数去掉，并去掉反引号即可
+		*p1 = s;
+		*s++ = 0;
+		*p2 = s;
+		while (*s && *s != '`') {
+			s++;
+		}
+		if (*s) {
+			*s = ' ';
+		}
+		s = *p2;
+		return '`';
+	}
+
 	if (strchr(SYMBOLS, *s)) {
 		int t = *s;
 		*p1 = s;
@@ -82,6 +96,9 @@ int parsecmd(char **argv, int *rightpipe) {
 		char *t;
 		int fd, r;
 		int c = gettoken(0, &t);
+
+		static int inbt = 0; // 0表示不在反引号中
+		
 		switch (c) {
 		case 0:
 			return argc;
@@ -193,7 +210,11 @@ int parsecmd(char **argv, int *rightpipe) {
 		case '#':
 			return argc;
 			break;
-			
+		case '`':;
+			if (argc > 0) {
+				argv[--argc] = 0;
+			}
+			break;
 
 		}
 	}
