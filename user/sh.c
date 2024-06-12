@@ -44,17 +44,14 @@ int _gettoken(char *s, char **p1, char **p2) {
 		return 'w';
 	}
 
-	if (*s == '`') { // 反引号，将前面的echo参数去掉，并去掉反引号即可
-		*p1 = s;
+	if (*s == '`') { // 反引号
 		*s++ = 0;
-		*p2 = s;
+		*p1 = s;
 		while (*s && *s != '`') {
 			s++;
 		}
-		if (*s) {
-			*s = ' ';
-		}
-		s = *p2;
+		*s++ = 0;
+		*p2 = s;
 		return '`';
 	}
 
@@ -211,8 +208,44 @@ int parsecmd(char **argv, int *rightpipe) {
 			return argc;
 			break;
 		case '`':;
-			if (argc > 0) {
-				argv[--argc] = 0;
+			char cmd[1024];
+			int i = 0;
+			for (i = 0; *t; ) {
+				cmd[i++] = *t++;
+			}
+			cmd[i] = 0;
+			if (pipe(p) != 0) {
+				debugf("fail to create a pipe!");
+				exit();
+			}
+			if ((r = fork()) < 0) {
+				debugf("fail to fork!");
+				exit();
+			}
+			// *rightpipe = r;
+			if (r == 0) {
+				dup(p[1], 1);
+				close(p[0]);
+				close(p[1]);
+
+				while (argc) {
+					argv[--argc] = 0;
+				}
+				runcmd(cmd);
+				exit();
+			} else {
+				dup(p[0], 0);
+				close(p[1]);
+
+				char result[1024];
+				int tot = 0, n = 0;
+
+				while (n = read(p[0], result + tot, sizeof(result) - 1 - tot)) {
+					tot += n;
+				} // read pipe
+				argv[argc++] = result;
+				close(p[0]);
+				wait(r);
 			}
 			break;
 
