@@ -43,7 +43,7 @@ int _gettoken(char *s, char **p1, char **p2) {
 		*p2 = s;
 		return 'w';
 	}
-
+/*
 	if (*s == '`') { // 反引号
 		*s++ = 0;
 		*p1 = s;
@@ -54,13 +54,13 @@ int _gettoken(char *s, char **p1, char **p2) {
 		*p2 = s;
 		return '`';
 	}
-
+*/
 	if (strchr(SYMBOLS, *s)) {
 		int t = *s;
 		*p1 = s;
 		*s++ = 0;
 		*p2 = s;
-		/*
+		
 		if (t == *s && (t == '>' || t == '&' || t == '|')) { // find ">>", "&&" or "||"
 			*s++ = 0;
 			*p2 = s;
@@ -73,7 +73,7 @@ int _gettoken(char *s, char **p1, char **p2) {
 			}
 		} else {
 			return t;
-		}*/
+		}
 		return t;
 	}
 
