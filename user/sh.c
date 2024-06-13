@@ -60,7 +60,19 @@ int _gettoken(char *s, char **p1, char **p2) {
 		*p1 = s;
 		*s++ = 0;
 		*p2 = s;
-		return t;
+		if (t == *p2 && (t == '>' || t == '&' || t == '|')) { // find ">>", "&&" or "||"
+			*s++ = 0;
+			*p2 = s;
+			if (t == '>') {
+				return 'a';
+			} else if (t == '&') {
+				return 'b';
+			} else if (t == '|') {
+				return 'c';
+			}
+		} else {
+			return t;
+		}
 	}
 
 	*p1 = s;
@@ -248,6 +260,26 @@ int parsecmd(char **argv, int *rightpipe) {
 				wait(r);
 			}
 			break;
+		case 'a': // >>
+			if (gettoken(0, &t) != 'w') {
+				debugf("syntax error: >> not followed by word\n");
+				exit();
+			}
+			fd = open(t, O_WRONLY | O_APPEND);
+			if (fd < 0) {
+				debugf("can't open '%s' for writing!", t);
+				exit();
+			}
+			dup(fd, 1);
+			close(fd);
+			break;
+		case 'b': // &&
+
+			break;
+		case 'c': // ||
+
+			break;
+
 
 		}
 	}
