@@ -60,6 +60,7 @@ int _gettoken(char *s, char **p1, char **p2) {
 		*p1 = s;
 		*s++ = 0;
 		*p2 = s;
+		/*
 		if (t == *s && (t == '>' || t == '&' || t == '|')) { // find ">>", "&&" or "||"
 			*s++ = 0;
 			*p2 = s;
@@ -72,7 +73,8 @@ int _gettoken(char *s, char **p1, char **p2) {
 			}
 		} else {
 			return t;
-		}
+		}*/
+		return t;
 	}
 
 	*p1 = s;
