@@ -111,10 +111,10 @@ int spawn(char *prog, char **argv) {
 	// Step 1: Open the file 'prog' (the path of the program).
 	// Return the error if 'open' fails.
 	int fd;
+	int len = strlen(prog);
+	char tmp[MAXNAMELEN];
 	if ((fd = open(prog, O_RDONLY)) < 0) {
-		int len = strlen(prog);
-		if (!(*(prog + len - 2) == '.' && *(prog + len - 1) == 'b') && fd == -E_NOT_FOUND) {
-			char tmp[1024];
+		if (!(*(prog + len - 2) == '.' && *(prog + len - 1) == 'b') && len < MAXNAMELEN - 2 && fd == -E_NOT_FOUND) {
 			int i = 0;
 			while (prog[i]) {
 				tmp[i++] = prog[i];
@@ -122,9 +122,9 @@ int spawn(char *prog, char **argv) {
 			tmp[i++] = '.';
 			tmp[i++] = 'b';
 			tmp[i++] = '\0';
-			fd = open(tmp, O_RDONLY);
+			prog = tmp;
 		}
-		if (fd < 0) {
+		if ((fd = open(prog, O_RDONLY)) < 0) {
 			return fd;
 		}
 	}
