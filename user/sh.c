@@ -157,6 +157,7 @@ int parsecmd(char **argv, int *rightpipe) {
 				debugf("can't open '%s' for writing!", t);
 				exit();
 			}
+			ftruncate(fd, 0);
 			dup(fd, 1);
 			close(fd);
 
