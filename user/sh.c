@@ -152,12 +152,11 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (2/3) */
-			fd = open(t, O_WRONLY);
+			fd = open(t, O_WRONLY | O_CREAT | O_TRUNC);
 			if (fd < 0) {
 				debugf("can't open '%s' for writing!", t);
 				exit();
 			}
-			ftruncate(fd, 0); // added in challenge-shell
 			dup(fd, 1);
 			close(fd);
 
@@ -211,11 +210,15 @@ int parsecmd(char **argv, int *rightpipe) {
 				debugf("fail to fork!");
 				exit();
 			}
+			*rightpipe = r;
 			if (r == 0) {
 				return argc;
 			} else {
 				wait(r);
-				*rightpipe = 0;
+				close(0);
+				close(1);
+				dup(opencons(), 1);
+				dup(1, 0);
 				return parsecmd(argv, rightpipe);
 			}
 			break;
@@ -268,7 +271,7 @@ int parsecmd(char **argv, int *rightpipe) {
 				debugf("syntax error: >> not followed by word\n");
 				exit();
 			}
-			fd = open(t, O_WRONLY | O_APPEND);
+			fd = open(t, O_WRONLY | O_CREAT | O_APPEND);
 			if (fd < 0) {
 				debugf("can't open '%s' for writing!", t);
 				exit();
