@@ -138,3 +138,18 @@ int fsipc_remove(const char *path) {
 int fsipc_sync(void) {
 	return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);
 }
+
+// challenge-shell, just imitate 'fsipc_open'
+int fsipc_create(const char *path, u_int f_type) {
+	struct Fsreq_create *req;
+	req = (struct Fsreq_create *)fsipcbuf;
+
+	// The path is too long.
+	if (strlen(path) >= MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+
+	strcpy((char *)req->req_path, path);
+	req->f_type = f_type;
+	return fsipc(FSREQ_CREATE, req, 0, 0);
+}

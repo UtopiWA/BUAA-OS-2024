@@ -14,6 +14,7 @@ enum {
 	FSREQ_DIRTY,
 	FSREQ_REMOVE,
 	FSREQ_SYNC,
+	FSREQ_CREATE, // challenge-shell
 	MAX_FSREQNO,
 };
 
@@ -43,6 +44,11 @@ struct Fsreq_dirty {
 
 struct Fsreq_remove {
 	char req_path[MAXPATHLEN];
+};
+
+struct Fsreq_create { //challenge-shell
+	char req_path[MAXPATHLEN];
+	u_int f_type;
 };
 
 #endif
