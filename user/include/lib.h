@@ -119,6 +119,7 @@ int read_map(int fd, u_int offset, void **blk);
 int remove(const char *path);
 int ftruncate(int fd, u_int size);
 int sync(void);
+int create(const char *path, int type); // challenge-shell
 
 #define user_assert(x)                                                                             \
 	do {                                                                                       \

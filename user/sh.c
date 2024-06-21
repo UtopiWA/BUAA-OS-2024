@@ -101,14 +101,14 @@ int gettoken(char *s, char **p1) {
 
 #define MAXARGS 128
 
+void runcmd(char *s);
+
 int parsecmd(char **argv, int *rightpipe) {
 	int argc = 0;
 	while (1) {
 		char *t;
 		int fd, r;
 		int c = gettoken(0, &t);
-
-		static int inbt = 0; // 0表示不在反引号中
 		
 		switch (c) {
 		case 0:
