@@ -280,3 +280,8 @@ int sync(void) {
 int create(const char *path, int type) {
 	return fsipc_create(path, type);
 }
+
+// challenge-shell
+int rmloop(const char *path) {
+	return fsipc_rmloop(path);
+}

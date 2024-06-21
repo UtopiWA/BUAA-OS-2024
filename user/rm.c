@@ -1,9 +1,7 @@
-/*
 #include <lib.h>
-#include "../fs/serv.h"
 
 int flag[256];
-
+/*
 char *strcat(char *dest, const char *src)
 {
 	char *tmp = dest;	 
@@ -14,7 +12,7 @@ char *strcat(char *dest, const char *src)
 	return tmp;
 }
 
-int rm_loop(char *path) {	
+int rmloop(char *path) {	
 	int fd, type;
 	struct Filefd *ffd;
 	struct File *dir;
@@ -39,7 +37,7 @@ int rm_loop(char *path) {
 				if (f->f_name) {
 					strcat(name, "/");
 					strcat(name, f->f_name);
-					rm_loop(name);
+					rmloop(name);
 				}
 			}
 		}
@@ -47,14 +45,14 @@ int rm_loop(char *path) {
 	}
 	return 0;
 }
-
+*/
 int remove_loop(char *path) { // imitate 'dir_lookup' in 'fs/fs.c'
 	int fd, type;
 	struct Filefd *ffd;
 
 	if (flag['r']) {
 		if ((fd = open(path, O_RDONLY)) >= 0) {
-			rm_loop(path); // 递归删除
+			rmloop(path); // 递归删除
 		} else {
 			if (flag['f']) {
 				return 0;	
@@ -88,13 +86,13 @@ int main(int argc, char **argv) {
 	}
 	ARGEND
 	
-	return remove_loop(argv[0]);
+	remove_loop(argv[0]);
 
-	// return 0;
+	return 0;
 }
-*/
+/*
 #include <lib.h>
 int main() {
 	return 0;
 }
-
+*/

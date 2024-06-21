@@ -813,3 +813,45 @@ int file_remove(char *path) {
 
 	return 0;
 }
+
+// challenge-shell
+char *strcat(char *dest, const char *src)
+{
+	char *tmp = dest;	 
+	while (*dest)
+		dest++;
+	while ((*dest++ = *src++) != '\0')
+		;
+	return tmp;
+}
+
+int file_rmloop(char *path) {
+	int r;
+	struct File *f;
+
+	if ((r = walk_path(path, 0, &f, 0)) < 0) {
+		return r;
+	}
+
+	if (f->f_type == FTYPE_DIR) { // 递归处理目录
+		char name[MAXNAMELEN];
+		strcpy(name, path);
+
+		void *blk;
+		u_int nblock = f->f_size / BLOCK_SIZE;
+		for (int i = 0; i < nblock; i++) {
+			try(file_get_block(f, i, &blk));
+			struct File *files = (struct File *)blk;
+
+			for (struct File *ff = files; ff < files + FILE2BLK; ++ff) {
+				if (ff->f_name) {
+					strcat(name, "/");
+					strcat(name, ff->f_name);
+					file_rmloop(name);
+				}
+			}
+		}
+
+	}
+	return file_remove(path);
+}

@@ -153,3 +153,15 @@ int fsipc_create(const char *path, u_int f_type) {
 	req->f_type = f_type;
 	return fsipc(FSREQ_CREATE, req, 0, 0);
 }
+
+// challenge-shell, just imitate 'fsipc_remove'
+int fsipc_rmloop(const char *path) {
+	if (strlen(path) == 0 || strlen(path) >= MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+
+	struct Fsreq_rmloop *req = (struct Fsreq_rmloop *)fsipcbuf;
+	strcpy(req->req_path, path);
+
+	return fsipc(FSREQ_RMLOOP, req, 0, 0);
+}

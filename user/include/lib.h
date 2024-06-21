@@ -101,6 +101,7 @@ int fsipc_remove(const char *);
 int fsipc_sync(void);
 int fsipc_incref(u_int);
 int fsipc_create(const char *, u_int); // challenge-shell
+int fsipc_rmloop(const char *); // challenge-shell
 
 // fd.c
 int close(int fd);
