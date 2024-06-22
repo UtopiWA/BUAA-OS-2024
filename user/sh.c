@@ -4,6 +4,11 @@
 #define WHITESPACE " \t\r\n"
 #define SYMBOLS "<|>&;()#`"
 
+// challenge-shell
+#define HISTFILESIZE 20
+int histsum; // 当前历史指令数量
+int hist_offTb[HISTFILESIZE]; // 历史指令长度偏移
+
 /* Overview:
  *   Parse the next token from the string at s.
  *
@@ -319,6 +324,11 @@ void runcmd(char *s) {
 
 void readline(char *buf, u_int n) {
 	int r;
+	// challenge-shell
+	int len = 0;
+	int histnow = histsum; // 当前查看的指令
+	char display[128]; // 显示的指令
+
 	for (int i = 0; i < n; i++) {
 		if ((r = read(0, buf + i, 1)) != 1) {
 			if (r < 0) {
@@ -326,6 +336,59 @@ void readline(char *buf, u_int n) {
 			}
 			exit();
 		}
+
+		// challenge-shell, key UDLR
+		if (buf[i] == 27) {
+			for (int j = 0; j < 2; j++) {
+				i++;
+				if ((r = read(0, buf + i, 1)) != 1) {
+					if (r < 0) {
+						debugf("read error: %d\n", r);
+					}
+					exit();
+				}
+			}
+
+			if (buf[i] == 'A') { // up
+				printf("%c[B", 27); // 防止光标向上移动
+				if (histnow) {
+					histnow--;
+					gethist(display, histnow);
+					strcpy(buf, display);
+					for (int j = 0; j < len; j++) {
+						printf("\b");
+					}
+					for (int j = 0; j < len; j++) {
+						printf(" ");
+					}
+					for (int j = 0; j < len; j++) {
+						printf("\b");
+					}
+					printf("%s", buf);
+					len = strlen(buf);
+					i = len;
+				}
+			} else if (buf[i] == 'B') { // down
+				if (histnow < histsum) {
+					histnow++;
+					gethist(display, histnow);
+					strcpy(buf, display);
+					for (int j = 0; j < len; j++) {
+						printf("\b");
+					}
+					for (int j = 0; j < len; j++) {
+						printf(" ");
+					}
+					for (int j = 0; j < len; j++) {
+						printf("\b");
+					}
+					printf("%s", buf);
+					len = strlen(buf);
+					i = len;
+				}
+			}
+		}
+
 		if (buf[i] == '\b' || buf[i] == 0x7f) {
 			if (i > 0) {
 				i -= 2;
@@ -333,7 +396,8 @@ void readline(char *buf, u_int n) {
 				i = -1;
 			}
 			if (buf[i] != '\b') {
-				printf("\b");
+				// printf("\b");
+				printf("\b \b"); // changed
 			}
 		}
 		if (buf[i] == '\r' || buf[i] == '\n') {
@@ -353,6 +417,54 @@ char buf[1024];
 void usage(void) {
 	printf("usage: sh [-ix] [script-file]\n");
 	exit();
+}
+
+// challenge-shell
+char *strcat(char *dest, const char *src)
+{
+	char *tmp = dest;	 
+	while (*dest)
+		dest++;
+	while ((*dest++ = *src++) != '\0')
+		;
+	return tmp;
+}
+
+void savehist(char *cmd) { // 保存历史指令
+	int fd, r;
+	if ((fd = open(".mosh_history", O_WRONLY | O_APPEND)) < 0) {
+		user_panic("open .mosh_history failed\n");
+	}
+	if ((r = write(fd, cmd, strlen(cmd))) != strlen(cmd)
+		|| (r = write(fd, "\n", 1)) != 1) {
+		user_panic("error when writing .mosh_history\n");
+	}
+	hist_offTb[histsum++] = strlen(cmd) + 1 + (histsum > 0 ? hist_offTb[histsum - 1] : 0);	
+	
+	close(fd);
+}
+
+void gethist(char *cmd, int idx) { // 由偏移得到历史指令 
+	int fd, r, offset, len;
+	if ((fd = open(".mosh_history", O_RDONLY)) < 0) {
+		user_panic("open .mosh_history failed\n");
+	}
+	if (idx >= histsum) {
+		*cmd = 0;
+		return;
+	}
+	offset = idx > 0 ? hist_offTb[idx - 1] : 0;
+	len = hist_offTb[idx] - offset;
+
+	if ((r = seek(fd, offset)) < 0) {
+		user_panic("seek failed\n");
+	}
+	if ((r = readn(fd, cmd, len)) != len) {
+		user_panic("error when reading .mosh_history");
+	}
+	
+	close(fd);
+	cmd[len - 1] = 0; // truncate the '\n'
 }
 
 int main(int argc, char **argv) {
@@ -376,6 +488,12 @@ int main(int argc, char **argv) {
 	}
 	ARGEND
 
+	// challenge-shell, create '.mosh_history'
+	if ((r = open(".mosh_history", O_TRUNC | O_CREAT)) < 0) {
+		return r;
+	}
+	histsum = 0;
+
 	if (argc > 1) {
 		usage();
 	}
@@ -391,6 +509,7 @@ int main(int argc, char **argv) {
 			printf("\n$ ");
 		}
 		readline(buf, sizeof buf);
+		savehist(buf); // challenge-shell
 
 		if (buf[0] == '#') {
 			continue;
@@ -402,7 +521,15 @@ int main(int argc, char **argv) {
 			user_panic("fork: %d", r);
 		}
 		if (r == 0) {
-			runcmd(buf);
+			// challenge-shell
+			if (strcmp(buf, "history") == 0) {
+				char tmp[1024] = "cat < .mosh_";
+				strcat(tmp, buf);
+				runcmd(tmp);
+			} else {
+				runcmd(buf);
+			}
+
 			exit();
 		} else {
 			wait(r);
