@@ -346,8 +346,6 @@ int parsecmd(char **argv, int *rightpipe) {
 				wait(r);
 				jump = (pre_status == 0);
 				*rightpipe = 0;
-				dup(0, 1);
-				dup(1, 0);
 				return parsecmd(argv, rightpipe);
 			}
 			break;
@@ -380,8 +378,6 @@ int parsecmd(char **argv, int *rightpipe) {
 				wait(r);
 				jump = (pre_status == 1);
 				*rightpipe = 0;
-				dup(0, 1);
-				dup(1, 0);
 				return parsecmd(argv, rightpipe);
 			}
 			break;
