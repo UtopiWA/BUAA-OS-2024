@@ -9,6 +9,11 @@
 int histsum; // 当前历史指令数量
 int hist_offTb[HISTFILESIZE]; // 历史指令长度偏移
 
+// challenge-shell, for '&&' and '||'
+int pre_status; // 前面部分的布尔值
+int jump; // 是否跳过当前指令
+int pre_token; // 前一个操作，'&&' 或 '||' 或 0
+
 /* Overview:
  *   Parse the next token from the string at s.
  *
@@ -116,8 +121,14 @@ int parsecmd(char **argv, int *rightpipe) {
 		int c = gettoken(0, &t);
 		
 		switch (c) {
-		case 0:
-			return argc;
+		case 0:	
+			if (jump) { // changed after fin '&&||'
+				jump = 0;
+				return 0;
+			} else {
+				return argc;
+			}
+			// return argc;
 		case 'w':
 			if (argc >= MAXARGS) {
 				debugf("too many arguments\n");
@@ -201,10 +212,17 @@ int parsecmd(char **argv, int *rightpipe) {
 				close(p[1]);
 				return parsecmd(argv, rightpipe);
 			} else {
+				ipc_recv(0, 0, 0); // challenge-shell, added after fin '&&||'
 				dup(p[1], 1);
 				close(p[0]);
 				close(p[1]);
-				return argc;
+				if (jump) { // changed after fin '&&||'
+					jump = 0;
+					return 0;
+				} else {
+					return argc;
+				}
+				// return argc;
 			}
 
 			//user_panic("| not implemented");
@@ -217,8 +235,15 @@ int parsecmd(char **argv, int *rightpipe) {
 			}
 			*rightpipe = r;
 			if (r == 0) {
-				return argc;
+				if (jump) { // changed after fin '&&||'
+					jump = 0;
+					return 0;
+				} else {
+					return argc;
+				}
+				// return argc;
 			} else {
+				ipc_recv(0, 0, 0); // challenge-shell, added after fin '&&||'
 				wait(r);
 				close(0);
 				close(1);
@@ -228,7 +253,13 @@ int parsecmd(char **argv, int *rightpipe) {
 			}
 			break;
 		case '#':
-			return argc;
+			if (jump) { // changed after fin '&&||'
+				jump = 0;
+				return 0;
+			} else {
+				return argc;
+			}
+			// return argc;
 			break;
 		case '`':;
 			char cmd[1024];
@@ -257,6 +288,8 @@ int parsecmd(char **argv, int *rightpipe) {
 				runcmd(cmd);
 				exit();
 			} else {
+				ipc_recv(0, 0, 0); // added after fin '&&||'
+
 				dup(p[0], 0);
 				close(p[1]);
 
@@ -285,17 +318,84 @@ int parsecmd(char **argv, int *rightpipe) {
 			close(fd);
 			break;
 		case 'b': // &&
+			r = fork();
+			if (r == 0) {
+				if (jump) {
+					return 0;
+				} else {
+					return argc;
+				}
+			} else {
+				int son;
+				if (jump) {
+					jump = 0;
+					son = 0;
+				} else {
+					son = ipc_recv(0, 0, 0);
+				}
 
+				if (pre_token == 0) {
+					pre_status = (son == 0);
+				} else if (pre_token == 'c' && pre_status == 0 && son == 0) {
+					pre_status = 1;
+				} else if (pre_token == 'b' && pre_status == 1 && son) {
+					pre_status = 0;
+				}
+
+				pre_token = 'b';
+				wait(r);
+				jump = (pre_status == 0);
+				*rightpipe = 0;
+				dup(0, 1);
+				dup(1, 0);
+				return parsecmd(argv, rightpipe);
+			}
 			break;
 		case 'c': // ||
+			r = fork();
+			if (r == 0) {
+				if (jump) {
+					return 0;
+				} else {
+					return argc;
+				}
+			} else {
+				int son;
+				if (jump) {
+					jump = 0;
+					son = 0;
+				} else {
+					son = ipc_recv(0, 0, 0);
+				}
 
+				if (pre_token == 0) {
+					pre_status = (son == 0);
+				} else if (pre_token == 'c' && pre_status == 0 && son == 0) {
+					pre_status = 1;
+				} else if (pre_token == 'b' && pre_status == 1 && son) {
+					pre_status = 0;
+				}
+
+				pre_token = 'c';
+				wait(r);
+				jump = (pre_status == 1);
+				*rightpipe = 0;
+				dup(0, 1);
+				dup(1, 0);
+				return parsecmd(argv, rightpipe);
+			}
 			break;
-
 
 		}
 	}
 
-	return argc;
+	if (jump) { // changed after fin '&&||'
+		jump = 0;
+		return 0;
+	} else {
+		return argc;
+	}
+	// return argc;
 }
 
 void runcmd(char *s) {
@@ -303,6 +403,12 @@ void runcmd(char *s) {
 
 	char *argv[MAXARGS];
 	int rightpipe = 0;
+	
+	// challenge-shell
+	pre_status = 1;
+	jump = 0;
+	pre_token = 0;
+
 	int argc = parsecmd(argv, &rightpipe);
 	if (argc == 0) {
 		return;
