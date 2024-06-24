@@ -226,7 +226,7 @@ int parsecmd(char **argv, int *rightpipe)
 	    if (r == 0)
              {
 		struct Env* temp_env = &envs[ENVX(syscall_getenvid())];
-                set_env_back(temp_env->env_id,1);
+               syscall_set_env_back(temp_env->env_id,1);
                      if(jump==1){jump=0; return 0;}
                      else return argc;
              }
