@@ -390,8 +390,8 @@ int parsecmd(char **argv, int *rightpipe) {
 			break;
 		case '&':
 			r = fork();
-			struct Env *tmp = &envs[ENVX(syscall_getenvid())];
 			if (r == 0){
+				const volatile struct Env *tmp = &envs[ENVX(syscall_getenvid())];
 				syscall_set_env_back(tmp->env_id, 1);
 				if (jump) {
 					jump = 0;
@@ -399,6 +399,7 @@ int parsecmd(char **argv, int *rightpipe) {
 				}
 				return argc;
 			} else {
+				const volatile struct Env *tmp = &envs[ENVX(syscall_getenvid())];
 				ipc_send(tmp->env_parent_id, r, 0, 0);
 				*rightpipe = 0;
 				return parsecmd(argv, rightpipe);
@@ -637,7 +638,7 @@ int main(int argc, char **argv) {
 
 		// challenge-shell, added after fin bg
 		if (buf[0] == 'j' && buf[1] == 'o' && buf[2] == 'b' && buf[3] == 's') {
-			struct Env *tmp;
+			const volatile struct Env *tmp;
 			for (int j = 1; j < job_id; j++) {
 				tmp = &envs[ENVX(job_envid[j])];
 				if (tmp->env_status == ENV_FREE) {
@@ -648,12 +649,12 @@ int main(int argc, char **argv) {
 			continue;
 		}
 		if (buf[0] == 'f' && buf[1] == 'g') {
-			char *ptr = buf + 3;
+			int len = strlen(buf) - 1;
 			int sum = 0;
-			struct Env *tmp;
+			const volatile struct Env *tmp;
 
-			while (*ptr) {
-				sum = sum * 10 + (*(ptr++) - '0');
+			for (int t = 3; t <= len; t++) {
+				sum = sum * 10 + (buf[t] - '0');
 			}
 			if (sum >= job_id) {
 				printf("fg: job (%d) do not exist\n", sum);
@@ -666,18 +667,18 @@ int main(int argc, char **argv) {
 				strcpy(job_status[sum], "Done");
 				printf("fg: (0x%08x) not running\n", job_envid[sum]);
 				continue;
+			} else {
+				wait(job_envid[sum]);
+				continue;
 			}
-
-			wait(job_envid[sum]);
-			continue;
 		}
 		if (buf[0] == 'k' && buf[1] == 'i' && buf[2] == 'l' && buf[3] == 'l') {
-			char *ptr = buf + 5;
+			int len = strlen(buf) - 1;
 			int sum = 0;
-			struct Env *tmp;
+			const volatile struct Env *tmp;
 
-			while (*ptr) {
-				sum = sum * 10 + (*(ptr++) - '0');
+			for (int t = 5; t <= len; t++) {
+				sum = sum * 10 + (buf[t] - '0');
 			}
 			if (sum >= job_id) {
 				printf("fg: job (%d) do not exist\n", sum);
@@ -690,10 +691,10 @@ int main(int argc, char **argv) {
 				strcpy(job_status[sum], "Done");
 				printf("fg: (0x%08x) not running\n", job_envid[sum]);
 				continue;
+			} else {
+				syscall_env_destroy(job_envid[sum]);
+				continue;
 			}
-
-			syscall_env_destroy(job_envid[sum]);
-			continue;
 		}
 
 		if (buf[0] == '#') {
@@ -728,7 +729,7 @@ int main(int argc, char **argv) {
 				break;
 			}
 			if (flag) {
-				struct Env *tmp = &envs[ENVX(syscall_getenvid())];
+				const volatile struct Env *tmp = &envs[ENVX(syscall_getenvid())];
 				int rr = ipc_recv(0, 0, 0);
 				wait(r);
 				if (rr) {
