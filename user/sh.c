@@ -636,7 +636,7 @@ int main(int argc, char **argv) {
 		savehist(buf); // challenge-shell
 
 		// challenge-shell, added after fin bg
-		if (strcmp(buf, "jobs") == 0) {
+		if (buf[0] == 'j' && buf[1] == 'o' && buf[2] == 'b' && buf[3] == 's') {
 			struct Env *tmp;
 			for (int j = 1; j < job_id; j++) {
 				tmp = &envs[ENVX(job_envid[j])];
@@ -647,7 +647,7 @@ int main(int argc, char **argv) {
 			}
 			continue;
 		}
-		if (strcmp(buf, "fg") == 0) {
+		if (buf[0] == 'f' && buf[1] == 'g') {
 			char *ptr = buf + 3;
 			int sum = 0;
 			struct Env *tmp;
@@ -671,7 +671,7 @@ int main(int argc, char **argv) {
 			wait(job_envid[sum]);
 			continue;
 		}
-		if (strcmp(buf, "kill") == 0) {
+		if (buf[0] == 'k' && buf[1] == 'i' && buf[2] == 'l' && buf[3] == 'l') {
 			char *ptr = buf + 5;
 			int sum = 0;
 			struct Env *tmp;
