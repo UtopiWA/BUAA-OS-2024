@@ -386,6 +386,9 @@ struct Env *env_create(const void *binary, size_t size, int priority) {
 	e->env_pri = priority;
 	e->env_status = ENV_RUNNABLE;
 
+	// challenge-shell
+	e->env_back = 0;
+
 	/* Step 3: Use 'load_icode' to load the image from 'binary', and insert 'e' into
 	 * 'env_sched_list' using 'TAILQ_INSERT_HEAD'. */
 	/* Exercise 3.7: Your code here. (3/3) */

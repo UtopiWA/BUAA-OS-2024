@@ -550,6 +550,13 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 	return 0;
 }
 
+// challenge-shell
+void sys_set_env_back(u_int envid, u_int back) {
+	struct Env *e;
+	try(envid2env(envid , &e, 1));
+	e->env_back = back;
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -569,6 +576,7 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+    [SYS_set_env_back] = sys_set_env_back, // challenge-shell
 };
 
 /* Overview:

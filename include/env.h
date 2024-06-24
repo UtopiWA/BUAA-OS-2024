@@ -39,6 +39,9 @@ struct Env {
 
 	// Lab 6 scheduler counts
 	u_int env_runs; // number of times we've been env_run'ed
+
+	// challenge-shell
+	u_int env_back; // '1' if it's a background process
 };
 
 LIST_HEAD(Env_list, Env);

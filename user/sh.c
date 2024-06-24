@@ -14,6 +14,13 @@ int pre_status; // 前面部分的布尔值
 int jump; // 是否跳过当前指令
 int pre_token; // 前一个操作，'&&' 或 '||' 或 0
 
+// challenge-shell, for bg
+#define MAXJOBNUM 16
+static int job_id = 1;
+static int job_envid[64];
+static char job_status[20][64];
+static char job_cmd[20][1024];
+
 /* Overview:
  *   Parse the next token from the string at s.
  *
@@ -381,7 +388,22 @@ int parsecmd(char **argv, int *rightpipe) {
 				return parsecmd(argv, rightpipe);
 			}
 			break;
-
+		case '&':
+			r = fork();
+			struct Env *tmp = &envs[ENVX(syscall_getenvid())];
+			if (r == 0){
+				syscall_set_env_back(tmp->env_id, 1);
+				if (jump) {
+					jump = 0;
+					return 0;
+				}
+				return argc;
+			} else {
+				ipc_send(tmp->env_parent_id, r, 0, 0);
+				*rightpipe = 0;
+				return parsecmd(argv, rightpipe);
+			}
+			break;
 		}
 	}
 
@@ -613,6 +635,67 @@ int main(int argc, char **argv) {
 		readline(buf, sizeof buf);
 		savehist(buf); // challenge-shell
 
+		// challenge-shell, added after fin bg
+		if (strcmp(buf, "jobs") == 0) {
+			struct Env *tmp;
+			for (int j = 1; j < job_id; j++) {
+				tmp = &envs[ENVX(job_envid[j])];
+				if (tmp->env_status == ENV_FREE) {
+					strcpy(job_status[j], "Done");
+				}
+				printf("[%d] %-10s 0x%08x %s\n", j, job_status[j], job_envid[j], job_cmd[j]);
+			}
+			continue;
+		}
+		if (strcmp(buf, "fg") == 0) {
+			char *ptr = buf + 3;
+			int sum = 0;
+			struct Env *tmp;
+
+			while (*ptr) {
+				sum = sum * 10 + (*(ptr++) - '0');
+			}
+			if (sum >= job_id) {
+				printf("fg: job (%d) do not exist\n", sum);
+				continue;
+			}
+			
+			tmp = &envs[ENVX(job_envid[sum])];
+
+			if (tmp->env_status == ENV_FREE) {
+				strcpy(job_status[sum], "Done");
+				printf("fg: (0x%08x) not running\n", job_envid[sum]);
+				continue;
+			}
+
+			wait(job_envid[sum]);
+			continue;
+		}
+		if (strcmp(buf, "kill") == 0) {
+			char *ptr = buf + 5;
+			int sum = 0;
+			struct Env *tmp;
+
+			while (*ptr) {
+				sum = sum * 10 + (*(ptr++) - '0');
+			}
+			if (sum >= job_id) {
+				printf("fg: job (%d) do not exist\n", sum);
+				continue;
+			}
+
+			tmp = &envs[ENVX(job_envid[sum])];
+
+			if (tmp->env_status == ENV_FREE) {
+				strcpy(job_status[sum], "Done");
+				printf("fg: (0x%08x) not running\n", job_envid[sum]);
+				continue;
+			}
+
+			syscall_env_destroy(job_envid[sum]);
+			continue;
+		}
+
 		if (buf[0] == '#') {
 			continue;
 		}
@@ -633,7 +716,28 @@ int main(int argc, char **argv) {
 			}
 
 			exit();
-		} else {
+		} else { // changed after fin fg
+			int len = strlen(buf) - 1;
+			int flag = 0;	
+
+			for (; len >= 0; len--) {
+				if (strchr(WHITESPACE, buf[len])) {
+					continue;
+				}
+				flag = (buf[len] == '&');
+				break;
+			}
+			if (flag) {
+				struct Env *tmp = &envs[ENVX(syscall_getenvid())];
+				int rr = ipc_recv(0, 0, 0);
+				wait(r);
+				if (rr) {
+					strcpy(job_cmd[job_id], buf);
+					job_envid[job_id] = rr;
+					strcpy(job_status[job_id], "Running");
+					job_id++;
+				}
+			}
 			wait(r);
 		}
 	}

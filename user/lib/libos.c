@@ -24,6 +24,7 @@ void libmain(int argc, char **argv) {
 
 	// challenge-shell
 	volatile struct Env *fa = &envs[ENVX(env->env_parent_id)];
+	volatile struct Env *grd = &envs[ENVX(fa->env_parent_id)]; // added after fin bg
 	volatile struct Env *ee = env;
 	int i = 0;
 	int grand = fa->env_parent_id;
@@ -35,7 +36,9 @@ void libmain(int argc, char **argv) {
 		i++;
 	}
 
-	if (i != LIBENV) {
+	int back = ee->env_back + fa->env_back + grd->env_back; // added after fin bg
+
+	if (i != LIBENV && back == 0) { // changed after fin bg
 		ipc_send(grand, r, 0, 0);
 	}
 

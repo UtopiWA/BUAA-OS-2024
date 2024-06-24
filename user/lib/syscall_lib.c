@@ -74,3 +74,8 @@ int syscall_read_dev(void *va, u_int dev, u_int size) {
 	/* Exercise 5.2: Your code here. (2/2) */
 	return msyscall(SYS_read_dev, va, dev, size);
 }
+
+// challenge-shell
+void syscall_set_env_back(u_int envid, u_int back) {
+	return msyscall(SYS_set_env_back, envid, back);
+}
